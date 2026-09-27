@@ -88,7 +88,10 @@
   </form>
 
   <div class="toolbar">
-    <p id="count" class="count" aria-live="polite"></p>
+    <div class="toolbar-info">
+      <nav id="path" class="path" aria-label="Location" hidden></nav>
+      <p id="count" class="count" aria-live="polite"></p>
+    </div>
     <div class="toolbar-actions">
       <button type="button" class="btn-ghost" id="reset" data-i18n="reset">សម្អាត</button>
       <button type="button" class="btn-ghost" id="copy-csv" data-i18n="copyCsv">ចម្លងជា CSV</button>
@@ -98,14 +101,15 @@
 
   <main class="layout">
     <div class="table-wrap">
-      <table class="results">
+      <table class="results" id="results">
         <thead>
           <tr>
             <th scope="col"><button type="button" class="sort" data-sort="code" data-i18n="code">លេខកូដ</button></th>
             <th scope="col"><button type="button" class="sort" data-sort="name" data-i18n="name">ឈ្មោះ</button></th>
             <th scope="col" class="col-type" data-i18n="type">ប្រភេទ</th>
-            <th scope="col" class="col-parent" data-i18n="district">ស្រុក / ក្រុង / ខណ្ឌ</th>
-            <th scope="col" class="col-parent" data-i18n="province">ខេត្ត / រាជធានី</th>
+            <th scope="col" class="col-parent col-d" data-i18n="district">ស្រុក / ក្រុង / ខណ្ឌ</th>
+            <th scope="col" class="col-parent col-p" data-i18n="province">ខេត្ត / រាជធានី</th>
+            <th scope="col" class="col-go"><span class="visually-hidden" data-i18n="open">បើក</span></th>
           </tr>
         </thead>
         <tbody id="rows"></tbody>
@@ -121,39 +125,6 @@
       <div id="detail-body"></div>
     </aside>
   </main>
-
-<!-- SEO:BROWSE:START -->
-  <section class="browse" aria-labelledby="browse-h">
-    <h2 id="browse-h" class="eyebrow">រកមើលតាមខេត្ត <span lang="en">· Browse by province</span></h2>
-    <ul class="browse-list">
-      <li><a href="places/010000-banteay-meanchey/"><span class="code">010000</span> <span class="name-kh">ខេត្តបន្ទាយមានជ័យ</span> <span class="name-en" lang="en">Banteay Meanchey</span></a> <span class="muted">9</span></li>
-      <li><a href="places/020000-battambang/"><span class="code">020000</span> <span class="name-kh">ខេត្តបាត់ដំបង</span> <span class="name-en" lang="en">Battambang</span></a> <span class="muted">14</span></li>
-      <li><a href="places/030000-kampong-cham/"><span class="code">030000</span> <span class="name-kh">ខេត្តកំពង់ចាម</span> <span class="name-en" lang="en">Kampong Cham</span></a> <span class="muted">10</span></li>
-      <li><a href="places/040000-kampong-chhnang/"><span class="code">040000</span> <span class="name-kh">ខេត្តកំពង់ឆ្នាំង</span> <span class="name-en" lang="en">Kampong Chhnang</span></a> <span class="muted">8</span></li>
-      <li><a href="places/050000-kampong-speu/"><span class="code">050000</span> <span class="name-kh">ខេត្តកំពង់ស្ពឺ</span> <span class="name-en" lang="en">Kampong Speu</span></a> <span class="muted">9</span></li>
-      <li><a href="places/060000-kampong-thom/"><span class="code">060000</span> <span class="name-kh">ខេត្តកំពង់ធំ</span> <span class="name-en" lang="en">Kampong Thom</span></a> <span class="muted">9</span></li>
-      <li><a href="places/070000-kampot/"><span class="code">070000</span> <span class="name-kh">ខេត្តកំពត</span> <span class="name-en" lang="en">Kampot</span></a> <span class="muted">9</span></li>
-      <li><a href="places/080000-kandal/"><span class="code">080000</span> <span class="name-kh">ខេត្តកណ្តាល</span> <span class="name-en" lang="en">Kandal</span></a> <span class="muted">13</span></li>
-      <li><a href="places/090000-koh-kong/"><span class="code">090000</span> <span class="name-kh">ខេត្តកោះកុង</span> <span class="name-en" lang="en">Koh Kong</span></a> <span class="muted">7</span></li>
-      <li><a href="places/100000-kratie/"><span class="code">100000</span> <span class="name-kh">ខេត្តក្រចេះ</span> <span class="name-en" lang="en">Kratie</span></a> <span class="muted">7</span></li>
-      <li><a href="places/110000-mondul-kiri/"><span class="code">110000</span> <span class="name-kh">ខេត្តមណ្ឌលគិរី</span> <span class="name-en" lang="en">Mondul Kiri</span></a> <span class="muted">5</span></li>
-      <li><a href="places/120000-phnom-penh/"><span class="code">120000</span> <span class="name-kh">រាជធានីភ្នំពេញ</span> <span class="name-en" lang="en">Phnom Penh</span></a> <span class="muted">14</span></li>
-      <li><a href="places/130000-preah-vihear/"><span class="code">130000</span> <span class="name-kh">ខេត្តព្រះវិហារ</span> <span class="name-en" lang="en">Preah Vihear</span></a> <span class="muted">8</span></li>
-      <li><a href="places/140000-prey-veng/"><span class="code">140000</span> <span class="name-kh">ខេត្តព្រៃវែង</span> <span class="name-en" lang="en">Prey Veng</span></a> <span class="muted">13</span></li>
-      <li><a href="places/150000-pursat/"><span class="code">150000</span> <span class="name-kh">ខេត្តពោធិ៍សាត់</span> <span class="name-en" lang="en">Pursat</span></a> <span class="muted">7</span></li>
-      <li><a href="places/160000-ratanak-kiri/"><span class="code">160000</span> <span class="name-kh">ខេត្តរតនគិរី</span> <span class="name-en" lang="en">Ratanak Kiri</span></a> <span class="muted">9</span></li>
-      <li><a href="places/170000-siem-reap/"><span class="code">170000</span> <span class="name-kh">ខេត្តសៀមរាប</span> <span class="name-en" lang="en">Siem Reap</span></a> <span class="muted">13</span></li>
-      <li><a href="places/180000-sihanoukville/"><span class="code">180000</span> <span class="name-kh">ខេត្តព្រះសីហនុ</span> <span class="name-en" lang="en">Sihanoukville</span></a> <span class="muted">6</span></li>
-      <li><a href="places/190000-stung-treng/"><span class="code">190000</span> <span class="name-kh">ខេត្តស្ទឹងត្រែង</span> <span class="name-en" lang="en">Stung Treng</span></a> <span class="muted">6</span></li>
-      <li><a href="places/200000-svay-rieng/"><span class="code">200000</span> <span class="name-kh">ខេត្តស្វាយរៀង</span> <span class="name-en" lang="en">Svay Rieng</span></a> <span class="muted">8</span></li>
-      <li><a href="places/210000-takeo/"><span class="code">210000</span> <span class="name-kh">ខេត្តតាកែវ</span> <span class="name-en" lang="en">Takeo</span></a> <span class="muted">10</span></li>
-      <li><a href="places/220000-otdar-meanchey/"><span class="code">220000</span> <span class="name-kh">ខេត្តឧត្តរមានជ័យ</span> <span class="name-en" lang="en">Otdar Meanchey</span></a> <span class="muted">5</span></li>
-      <li><a href="places/230000-kep/"><span class="code">230000</span> <span class="name-kh">ខេត្តកែប</span> <span class="name-en" lang="en">Kep</span></a> <span class="muted">2</span></li>
-      <li><a href="places/240000-pailin/"><span class="code">240000</span> <span class="name-kh">ខេត្តប៉ៃលិន</span> <span class="name-en" lang="en">Pailin</span></a> <span class="muted">2</span></li>
-      <li><a href="places/250000-tboung-khmum/"><span class="code">250000</span> <span class="name-kh">ខេត្តត្បូងឃ្មុំ</span> <span class="name-en" lang="en">Tboung Khmum</span></a> <span class="muted">7</span></li>
-    </ul>
-  </section>
-<!-- SEO:BROWSE:END -->
 
   <footer class="foot">
     <p data-i18n="source">ប្រភពទិន្នន័យ៖ CambodiaPostalCode.csv</p>

@@ -17,6 +17,7 @@ Search and filter the postal code of every province, district and commune in Cam
 - **Search** by Khmer name, English name or code. Several words work together (`Tuol Kouk`, `កំពត`), and a partial code such as `1204` lists everything under it.
 - **Common spellings match**: Phnom/Phnum, Koh/Kaoh, Stung/Stueng, Prek/Preaek, Toul/Tuol, Russey/Ruessei.
 - **Filter** by province, then district, and by level (province, district, commune).
+- **Browse step by step**: choose the ខេត្ត (province) level, click a province to see its districts, then click a district to see its communes. A breadcrumb above the table takes you back up.
 - **Details panel** with the full hierarchy and a ready-made address line in Khmer and English, plus copy buttons.
 - **Export** the current results as CSV (copy or download; opens correctly in Excel with Khmer text).
 - **Khmer / English** interface, light and dark themes, works on phones.

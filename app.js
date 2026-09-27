@@ -4,6 +4,11 @@
   const PAGE_SIZE = 50;
   const DATA = window.POSTAL_DATA || [];
   const byCode = new Map(DATA.map((e) => [e.code, e]));
+  const childCount = new Map();
+  for (const e of DATA) {
+    if (e.level === "district") childCount.set(e.p, (childCount.get(e.p) || 0) + 1);
+    if (e.level === "commune") childCount.set(e.d, (childCount.get(e.d) || 0) + 1);
+  }
 
   // ---------- i18n ----------
   const I18N = {
@@ -42,7 +47,8 @@
       showChildren: (n, what) => `បង្ហាញ ${what} ${n}`,
       childDistricts: "ស្រុក/ក្រុង/ខណ្ឌ",
       childCommunes: "ឃុំ/សង្កាត់",
-      pickRow: "ចុចលើជួរណាមួយ ដើម្បីមើលព័ត៌មានលម្អិត និងចម្លងអាសយដ្ឋាន។",
+      pickRow: "ចុចលើខេត្ត ដើម្បីមើលស្រុក ចុចលើស្រុក ដើម្បីមើលឃុំ ហើយចុចលើឃុំ ដើម្បីមើលព័ត៌មានលម្អិត។",
+      open: "បើក",
       copied: "បានចម្លង",
       copiedRows: (n) => `បានចម្លង ${n} ជួរ`,
       copyFailed: "មិនអាចចម្លងបាន។ សូមជ្រើសអត្ថបទ ហើយចម្លងដោយដៃ។",
@@ -85,7 +91,8 @@
       showChildren: (n, what) => `Show ${n} ${what}`,
       childDistricts: "districts",
       childCommunes: "communes",
-      pickRow: "Select a row to see its details and copy a ready-made address line.",
+      pickRow: "Click a province to see its districts, a district to see its communes, and a commune to see its details.",
+      open: "Open",
       copied: "Copied",
       copiedRows: (n) => `Copied ${n} rows`,
       copyFailed: "Copy was blocked. Select the text and copy it manually.",
@@ -127,7 +134,7 @@
   const els = {
     q: $("q"), province: $("f-province"), district: $("f-district"),
     rows: $("rows"), empty: $("empty"), pager: $("pager"), count: $("count"),
-    detail: $("detail"), detailBody: $("detail-body"), toast: $("toast"),
+    detail: $("detail"), detailBody: $("detail-body"), toast: $("toast"), path: $("path"),
   };
 
   const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -250,8 +257,9 @@
           ${mobile ? `<div class="mobile-parents">${levelBadge(e)} ${esc(mobile)}</div>` : `<div class="mobile-parents">${levelBadge(e)}</div>`}
         </td>
         <td class="col-type">${levelBadge(e)}</td>
-        <td class="col-parent">${parentCell(d)}</td>
-        <td class="col-parent">${e.level === "province" ? parentCell(null) : parentCell(p)}</td>
+        <td class="col-parent col-d">${parentCell(d)}</td>
+        <td class="col-parent col-p">${e.level === "province" ? parentCell(null) : parentCell(p)}</td>
+        <td class="col-go">${e.level === "commune" ? "" : `<span class="go">${childCount.get(e.code) || 0} ${esc(t(e.level === "province" ? "districts" : "communes").toLowerCase())}<span class="chev" aria-hidden="true">›</span></span>`}</td>
       </tr>`;
     }).join("");
 
@@ -259,8 +267,36 @@
       if (b.dataset.sort === state.sort) b.dataset.dir = state.dir; else delete b.dataset.dir;
     });
 
+    // Hide parent columns that would repeat the same value on every row.
+    const table = document.getElementById("results");
+    table.classList.toggle("hide-d", state.level === "province" || state.level === "district" || !!state.district);
+    table.classList.toggle("hide-p", state.level === "province" || !!state.province);
+
+    renderPath();
     renderPager(pages);
     renderDetail();
+  }
+
+  // Breadcrumb above the table: All provinces › Province › District
+  function renderPath() {
+    const show = state.province || state.level === "province";
+    els.path.hidden = !show;
+    if (!show) return;
+    const parts = [];
+    const atRoot = !state.province;
+    parts.push(atRoot
+      ? `<span aria-current="page">${esc(t("allProvinces"))}</span>`
+      : `<button type="button" data-root>${esc(t("allProvinces"))}</button>`);
+    if (state.province) {
+      const p = byCode.get(state.province);
+      const label = `${esc(typeLabel(p))}${lang === "km" ? "" : " "}${esc(name(p))}`;
+      parts.push(state.district ? `<button type="button" data-place="${p.code}">${label}</button>` : `<span aria-current="page">${label}</span>`);
+    }
+    if (state.district) {
+      const d = byCode.get(state.district);
+      parts.push(`<span aria-current="page">${esc(typeLabel(d))}${lang === "km" ? "" : " "}${esc(name(d))}</span>`);
+    }
+    els.path.innerHTML = parts.join(`<span class="sep" aria-hidden="true">›</span>`);
   }
 
   function renderPager(pages) {
@@ -385,9 +421,14 @@
 
   els.province.addEventListener("change", () => {
     state.province = els.province.value; state.district = ""; state.page = 1;
+    if (state.province && state.level === "province") setLevel("district");
     fillDistricts(); render();
   });
-  els.district.addEventListener("change", () => { state.district = els.district.value; state.page = 1; render(); });
+  els.district.addEventListener("change", () => {
+    state.district = els.district.value; state.page = 1;
+    if (state.district && state.level !== "all") setLevel("commune");
+    render();
+  });
   document.querySelectorAll('input[name="level"]').forEach((r) =>
     r.addEventListener("change", () => { state.level = r.value; state.page = 1; render(); }));
 
@@ -410,14 +451,41 @@
     els.rows.querySelectorAll("tr").forEach((tr) => tr.setAttribute("aria-selected", String(tr.dataset.code === code)));
     renderDetail();
   }
+  // Province -> its districts, district -> its communes, commune -> details.
+  function setLevel(level) {
+    state.level = level;
+    $("lv-" + level).checked = true;
+  }
+  function openPlace(code) {
+    const e = byCode.get(code);
+    if (e.level === "commune") { select(code); return; }
+    state.province = e.p;
+    state.district = e.level === "district" ? e.code : "";
+    setLevel(e.level === "province" ? "district" : "commune");
+    state.q = ""; els.q.value = "";
+    state.page = 1; state.sort = null;
+    state.selected = code;
+    els.province.value = state.province;
+    fillDistricts();
+    render();
+    document.querySelector(".toolbar").scrollIntoView({ block: "nearest", behavior: "smooth" });
+  }
+  function showAllProvinces() {
+    Object.assign(state, { q: "", province: "", district: "", page: 1, sort: null });
+    els.q.value = ""; els.province.value = "";
+    setLevel("province");
+    fillDistricts();
+    render();
+  }
+
   els.rows.addEventListener("click", (ev) => {
     const tr = ev.target.closest("tr[data-code]");
-    if (tr) select(tr.dataset.code);
+    if (tr) openPlace(tr.dataset.code);
   });
   els.rows.addEventListener("keydown", (ev) => {
     const tr = ev.target.closest("tr[data-code]");
     if (!tr) return;
-    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); select(tr.dataset.code); }
+    if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); openPlace(tr.dataset.code); }
     if (ev.key === "ArrowDown" && tr.nextElementSibling) { ev.preventDefault(); tr.nextElementSibling.focus(); }
     if (ev.key === "ArrowUp" && tr.previousElementSibling) { ev.preventDefault(); tr.previousElementSibling.focus(); }
   });
@@ -438,14 +506,14 @@
     else if ("copyAddress" in target.dataset) copy($("address-line").textContent, t("copied"));
     else if ("close" in target.dataset) { state.selected = null; render(); }
     else if (target.dataset.goto) { select(target.dataset.goto); }
-    else if (target.dataset.children) {
-      const e = byCode.get(target.dataset.children);
-      filterTo(e.code);
-      state.level = e.level === "province" ? "district" : "commune";
-      $("lv-" + state.level).checked = true;
-      state.q = ""; els.q.value = "";
-      render();
-    }
+    else if (target.dataset.children) openPlace(target.dataset.children);
+  });
+
+  $("path").addEventListener("click", (ev) => {
+    const b = ev.target.closest("button");
+    if (!b) return;
+    if (b.dataset.root !== undefined) showAllProvinces();
+    else openPlace(b.dataset.place);
   });
 
   $("reset").addEventListener("click", () => {
@@ -488,7 +556,10 @@
   function applyLocation() {
     const code = decodeURIComponent(location.hash.slice(1));
     if (/^\d{6}$/.test(code) && byCode.has(code)) {
+      const e = byCode.get(code);
       filterTo(code);
+      if (e.level === "commune") state.district = e.d;
+      else setLevel(e.level === "province" ? "district" : "commune");
       state.selected = code;
       return true;
     }

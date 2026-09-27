@@ -209,7 +209,7 @@ ${childSection}
 `;
 }
 
-// ---------- Home page: meta tags + crawlable province list ----------
+// ---------- Home page: meta tags ----------
 function replaceBetween(html, name, content) {
   const re = new RegExp(`(<!-- SEO:${name}:START -->)[\\s\\S]*?(<!-- SEO:${name}:END -->)`);
   if (!re.test(html)) throw new Error(`Marker SEO:${name} not found in index.html`);
@@ -244,17 +244,6 @@ function updateHome() {
 <meta property="og:locale:alternate" content="en_US">
 <meta name="twitter:card" content="summary">
 <script type="application/ld+json">${ld}</script>`);
-
-  const items = provinces.map((p) => {
-    const n = childrenOf(p).length;
-    return `      <li><a href="${pageDir(p)}"><span class="code">${p.code}</span> <span class="name-kh">${esc(fullKh(p))}</span> <span class="name-en" lang="en">${esc(p.en)}</span></a> <span class="muted">${n}</span></li>`;
-  }).join("\n");
-  html = replaceBetween(html, "BROWSE", `  <section class="browse" aria-labelledby="browse-h">
-    <h2 id="browse-h" class="eyebrow">រកមើលតាមខេត្ត <span lang="en">· Browse by province</span></h2>
-    <ul class="browse-list">
-${items}
-    </ul>
-  </section>`);
 
   fs.writeFileSync(file, html);
 }
